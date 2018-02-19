@@ -1,0 +1,21 @@
+what are * doing
+what is * doing
+what * going to do
+what did * do
+what have you done
+wtf are * doing
+wtf is * doing
+wtf * going to do
+wtf did * do
+wtf have you done
+
+  'what|wtf are * doing'
+'what|wtf is * doing'
+'what|wtf going to do'
+'what|wtf did * do'
+'what|wtf have you done'
+
+always reply "their best" by default
+if @roybot in any of them, then reply "my best"
+
+re.match(r"^[wW](hat|tf)(.*)(have|is|are)(.*) (doing|going to do|do|done)$", 'what on earth is she doing')
