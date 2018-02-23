@@ -1,12 +1,12 @@
 import discord, logging, json, re
 from discord.ext import commands
 from tinydb import TinyDB, Query
-from tinydb.operations import delete,increment
+from tinydb.operations import delete, increment
 
 description = '''Basic bot used to do fun things on Roy's Boy Toys '''
 bot = commands.Bot(command_prefix='!', description=description)
-db = TinyDB('data.json')
-Users = Query()
+db = TinyDB('db.json')
+Database = Query()
 
 bot_info = json.load(open('bot_info.json'))
 token = bot_info['token']
@@ -45,13 +45,25 @@ async def on_message(message):
     if "possum" in str(message.content).lower():
         await bot.send_message(message.channel, "::ehuuuuu:: I'm brave when it counts!!")
 
-"TODO: MAKE THIS USE RDS"
 @bot.command()
 async def shame():
-    """Says when a member joined."""
-    bot_info['grains'] += 1
-    numgrains = bot_info['grains']
-    await bot.say("1 grain of sand added to @DirtyGrundler#6579's jar of shame (currently " + numgrains + " grains of sand)")
+    """Increments number of grains of sand to Roy's Shame Jar."""
+    db.update(increment('count'), Database.type == 'grains_of_sand')
+    result = db.get(Database.type == 'grains_of_sand')
+    await bot.say("1 grain of sand added to @DirtyGrundler#6579's jar of shame (currently " + str(result['count']) + " grains of sand)")
+
+@bot.command()
+async def jarstatus():
+    """Notifies the status of Roy's Shame Jar."""
+    result = db.get(Database.type == 'grains_of_sand')
+
+    await bot.say("Currently " + str(result['count']) + " grains of sand!")
+    if (result['count'] < 10):
+        await bot.say("Not bad.")
+    elif (result['count'] > 10 and result['count'] < 30):
+        await bot.say("Be careful Roy...")
+    else:
+        await bot.say("Shameful :(")
 
 @bot.command()
 async def joined(member : discord.Member):
