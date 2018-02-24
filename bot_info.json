@@ -1,7 +1,7 @@
 {
-  "clientid": "411662969798131725",
-  "client-secret": "SBuInUw-o6vp6kUUMbqKW06onMJ1j72d",
-  "token": "NDExNjYyOTY5Nzk4MTMxNzI1.DV--zw.Gw6pRXecLIAfvs2THNzqCWFgf7c",
-  "usertag": "RoyBot#8045",
-  "name": "RoyBot"
+  "clientid": "[clientid]",
+  "client-secret": "[clientsecret]",
+  "token": "[token]",
+  "usertag": "[usertag of bot]",
+  "name": "[name]"
 }
