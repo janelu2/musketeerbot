@@ -1,5 +1,5 @@
 # musketeerbot
-Discord bot for small servers I'm on
+Discord bot for Roy's Boys' Toys
 
 How to use:
 1. Clone this repo
