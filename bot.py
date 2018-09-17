@@ -22,7 +22,7 @@ async def on_ready():
     print('Logged in as')
     print(bot.user.name)
     print('---------------')
-    #await start_tasks()
+    await start_tasks()
 
 def get_server():
     """Get the server object that we are executing the bot in"""
@@ -111,7 +111,6 @@ async def joined(member : discord.Member):
     """Says when a member joined."""
     await bot.say('{0.name} joined in {0.joined_at}'.format(member))
 
-@bot.command()
 async def role_assigner():
     """Assign the 'Employee of the moment' role to one user for a random amount
     of time, and then unassign and pass it on to someone else."""
@@ -121,7 +120,7 @@ async def role_assigner():
     await remove_leftover_roles(server, emp_role)
 
     while True:
-        random_length = random.randint(1,30)
+        random_length = random.randint(1,86400)
         user = get_random_online_user(server)
         await bot.add_roles(user, emp_role)
         await bot.send_message(channel, user.mention + " is now Employee of the Moment!")
