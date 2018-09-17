@@ -3,5 +3,7 @@
   "client-secret": "[clientsecret]",
   "token": "[token]",
   "usertag": "[usertag of bot]",
-  "name": "[name]"
+  "name": "[name]",
+  "serverid": "[serverid]",
+  "channelid": "[channelid]"
 }
