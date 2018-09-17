@@ -123,13 +123,12 @@ async def role_assigner():
         random_length = random.randint(1,86400)
         user = get_random_online_user(server)
         await bot.add_roles(user, emp_role)
-        await bot.send_message(channel, user.mention + " is now Employee of the Moment!")
         start_time = time.time()
         while True:
             if is_online(user) is False:
                 break
             elif (time.time() - start_time) < random_length:
-                asyncio.sleep(3)
+                await asyncio.sleep(3)
             else:
                 break
         await bot.remove_roles(user, emp_role)
