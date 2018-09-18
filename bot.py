@@ -6,6 +6,9 @@ from tinydb.operations import delete, increment
 bot = commands.Bot(command_prefix='!', description='''Basic bot used to do fun things on Roy's Boy Toys ''')
 db = TinyDB('db.json')
 Database = Query()
+random_length = 0
+start_time = 0
+emp_of_moment = ''
 
 bot_info = json.load(open('bot_info.json'))
 token = bot_info['token']
@@ -119,10 +122,15 @@ async def role_assigner():
     emp_role = discord.utils.get(server.roles, name="Employee of the moment")
     await remove_leftover_roles(server, emp_role)
 
+    global random_length
+    global emp_of_moment
+    global start_time
+
     while True:
-        random_length = random.randint(1,86400)
+        random_length = random.randint(1,86399)
         user = get_random_online_user(server)
         await bot.add_roles(user, emp_role)
+        emp_of_moment = user
         start_time = time.time()
         while True:
             if is_online(user) is False:
@@ -132,6 +140,18 @@ async def role_assigner():
             else:
                 break
         await bot.remove_roles(user, emp_role)
+
+@bot.command()
+async def check_role():
+    """Check how much longer the current Employee of the Moment has until the moment is over."""
+    global random_length
+    hours = random_length//3600
+    minutes = (random_length - 3600*hours)//60
+    secs = random_length - (hours*3600) - (minutes*60)
+    await bot.say(str(emp_of_moment) + "\'s moment will end at " +
+        time.strftime('%I:%M %p', time.localtime(start_time + random_length)) +
+        "! Their moment will last a total of " + str(hours) + " hours, " +
+        str(minutes) + " mins, " + str(secs) + " secs.")
 
 if __name__ == '__main__':
     bot.run(token)
