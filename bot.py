@@ -9,6 +9,7 @@ Database = Query()
 random_length = 0
 start_time = 0
 emp_of_moment = ''
+mutiny_votes = 0
 
 bot_info = json.load(open('bot_info.json'))
 token = bot_info['token']
@@ -35,7 +36,7 @@ def get_server():
 
 def is_online(user):
     """Check if a user is online"""
-    if str(user.status) == "online":
+    if (str(user.status) == "online" or str(user.status) == "idle"):
         return True
     else:
         return False
@@ -45,11 +46,14 @@ def get_random_online_user(server):
     online_users = []
     num_users = 0
     for user in server.members:
-        if is_online(user):
+        if is_online(user) and user.bot == False:
             num_users += 1
             online_users.append(user)
 
-    return online_users[random.randint(0, num_users-1)]
+    if num_users == 0:
+        return bot.user
+    else:
+        return online_users[random.randint(0, num_users-1)]
 
 async def remove_leftover_roles(server, role):
     """Sometimes when we start the bot up there might be some users that still
@@ -129,11 +133,16 @@ async def role_assigner():
     while True:
         random_length = random.randint(1,86399)
         user = get_random_online_user(server)
+
+        # if there's no one online, then the employee will be roybot for 30 mins
+        if (user == bot.user):
+            random_length = 1800
+
         await bot.add_roles(user, emp_role)
         emp_of_moment = user
         start_time = time.time()
         while True:
-            if is_online(user) is False:
+            if is_online_or_idle(user) is False:
                 break
             elif (time.time() - start_time) < random_length:
                 await asyncio.sleep(3)
