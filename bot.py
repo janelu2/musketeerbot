@@ -9,7 +9,8 @@ Database = Query()
 random_length = 0
 start_time = 0
 emp_of_moment = ''
-mutiny_votes = 0
+mutiny = False
+mutiny_votes = []
 
 bot_info = json.load(open('bot_info.json'))
 token = bot_info['token']
@@ -129,6 +130,7 @@ async def role_assigner():
     global random_length
     global emp_of_moment
     global start_time
+    global mutiny
 
     while True:
         random_length = random.randint(1,86399)
@@ -143,6 +145,9 @@ async def role_assigner():
         start_time = time.time()
         while True:
             if is_online_or_idle(user) is False:
+                break
+            elif mutiny == True:
+                mutiny = False
                 break
             elif (time.time() - start_time) < random_length:
                 await asyncio.sleep(3)
@@ -161,6 +166,18 @@ async def check_role():
         time.strftime('%I:%M %p', time.localtime(start_time + random_length)) +
         "! Their moment will last a total of " + str(hours) + " hours, " +
         str(minutes) + " mins, " + str(secs) + " secs.")
+
+@bot.command(pass_context=True)
+async def mutiny(ctx):
+    """Commit mutiny"""
+    global mutiny_votes
+    global mutiny
+
+    if ctx.message.author not in mutiny_votes:
+        mutiny_votes.append(ctx.message.author)
+    if (len(mutiny_votes) == 3):
+        mutiny = True
+        mutiny_votes[:] = []
 
 if __name__ == '__main__':
     bot.run(token)
