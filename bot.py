@@ -1,28 +1,72 @@
-import discord, logging, json, re
+import discord, logging, json, re, random, asyncio, time
 from discord.ext import commands
 from tinydb import TinyDB, Query
 from tinydb.operations import delete, increment
 
-description = '''Basic bot used to do fun things on Roy's Boy Toys '''
-bot = commands.Bot(command_prefix='!', description=description)
+bot = commands.Bot(command_prefix='!', description='''Basic bot used to do fun things on Roy's Boy Toys ''')
 db = TinyDB('db.json')
 Database = Query()
+random_length = 0
+start_time = 0
+emp_of_moment = ''
 
 bot_info = json.load(open('bot_info.json'))
 token = bot_info['token']
+
+logging.basicConfig(level=logging.INFO)
 
 # Print the starting text
 print('---------------')
 print('Starting RoyBot...')
 print('---------------')
 
-logging.basicConfig(level=logging.INFO)
-
 @bot.event
 async def on_ready():
     print('Logged in as')
     print(bot.user.name)
     print('---------------')
+    await start_tasks()
+
+def get_server():
+    """Get the server object that we are executing the bot in"""
+    for i in bot.servers:
+        if i.id == bot_info['serverid']:
+            return i
+
+def is_online(user):
+    """Check if a user is online"""
+    if str(user.status) == "online":
+        return True
+    else:
+        return False
+
+def get_random_online_user(server):
+    """Get a random user that is currently online (status = online)"""
+    online_users = []
+    num_users = 0
+    for user in server.members:
+        if is_online(user):
+            num_users += 1
+            online_users.append(user)
+
+    return online_users[random.randint(0, num_users-1)]
+
+async def remove_leftover_roles(server, role):
+    """Sometimes when we start the bot up there might be some users that still
+    have an old role such as 'Employee of the moment'. Here we remove the role
+    from all users before executing role assignments."""
+    for user in server.members:
+        if role in user.roles:
+            await bot.remove_roles(user, role)
+
+async def start_tasks():
+    '''This function will fire and forget a few methods that will run forever'''
+    asyncio.ensure_future(loop_role_assigner())
+
+async def loop_role_assigner():
+    '''Run role assigner forever'''
+    while True:
+        await role_assigner()
 
 @bot.listen()
 async def on_message(message):
@@ -70,4 +114,44 @@ async def joined(member : discord.Member):
     """Says when a member joined."""
     await bot.say('{0.name} joined in {0.joined_at}'.format(member))
 
-bot.run(token)
+async def role_assigner():
+    """Assign the 'Employee of the moment' role to one user for a random amount
+    of time, and then unassign and pass it on to someone else."""
+    server = get_server()
+    channel = server.get_channel(bot_info['channelid'])
+    emp_role = discord.utils.get(server.roles, name="Employee of the moment")
+    await remove_leftover_roles(server, emp_role)
+
+    global random_length
+    global emp_of_moment
+    global start_time
+
+    while True:
+        random_length = random.randint(1,86399)
+        user = get_random_online_user(server)
+        await bot.add_roles(user, emp_role)
+        emp_of_moment = user
+        start_time = time.time()
+        while True:
+            if is_online(user) is False:
+                break
+            elif (time.time() - start_time) < random_length:
+                await asyncio.sleep(3)
+            else:
+                break
+        await bot.remove_roles(user, emp_role)
+
+@bot.command()
+async def check_role():
+    """Check how much longer the current Employee of the Moment has until the moment is over."""
+    global random_length
+    hours = random_length//3600
+    minutes = (random_length - 3600*hours)//60
+    secs = random_length - (hours*3600) - (minutes*60)
+    await bot.say(str(emp_of_moment) + "\'s moment will end at " +
+        time.strftime('%I:%M %p', time.localtime(start_time + random_length)) +
+        "! Their moment will last a total of " + str(hours) + " hours, " +
+        str(minutes) + " mins, " + str(secs) + " secs.")
+
+if __name__ == '__main__':
+    bot.run(token)
