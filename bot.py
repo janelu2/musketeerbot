@@ -142,12 +142,18 @@ async def role_assigner():
 
         await bot.add_roles(user, emp_role)
         emp_of_moment = user
+
+        # check if this new employee of the moment is due to mutiny
+        if mutiny == True:
+            await bot.say("The new employee of the moment is " + str(emp_of_moment) + "!")
+            mutiny = False
+
         start_time = time.time()
         while True:
             if is_online_or_idle(user) is False:
                 break
             elif mutiny == True:
-                mutiny = False
+                last_employee = emp_of_moment
                 break
             elif (time.time() - start_time) < random_length:
                 await asyncio.sleep(3)
@@ -172,12 +178,34 @@ async def mutiny(ctx):
     """Commit mutiny"""
     global mutiny_votes
     global mutiny
+    global emp_of_moment
 
     if ctx.message.author not in mutiny_votes:
         mutiny_votes.append(ctx.message.author)
+        if (len(mutiny_votes) == 1):
+            await bot.say("1 vote for mutiny")
+        elif (len(mutiny_votes) == 2):
+            await bot.say("2 votes for mutiny")
+        elif (len(mutiny_votes) == 3):
+            await bot.say("There has been a revolution. " + str(emp_of_moment) +
+                "\'s moment has been officially murdered.")
+
     if (len(mutiny_votes) == 3):
         mutiny = True
         mutiny_votes[:] = []
+
+@bot.command(pass_context=True)
+async def check_mutiny(ctx):
+    """Check on mutiny status"""
+    global mutiny_votes
+
+    if (len(mutiny_votes) == 0):
+        await bot.say("The current rule is good and the people are happy -- no whispers of mutiny.")
+    else:
+        if (len(mutiny_votes) == 1):
+            await bot.say("There is currently one mutineer.")
+        else:
+            await bot.say("There are currently " + str(len(mutiny_votes)) + " mutineers.")
 
 if __name__ == '__main__':
     bot.run(token)
