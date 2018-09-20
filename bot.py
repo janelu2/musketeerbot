@@ -34,7 +34,7 @@ def get_server():
         if i.id == bot_info['serverid']:
             return i
 
-def is_online(user):
+def is_online_or_idle(user):
     """Check if a user is online"""
     if (str(user.status) == "online" or str(user.status) == "idle"):
         return True
@@ -46,7 +46,7 @@ def get_random_online_user(server):
     online_users = []
     num_users = 0
     for user in server.members:
-        if is_online(user) and user.bot == False:
+        if is_online_or_idle(user) and user.bot == False:
             num_users += 1
             online_users.append(user)
 
