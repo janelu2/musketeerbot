@@ -42,19 +42,19 @@ def is_online_or_idle(user):
     else:
         return False
 
-def get_random_online_user(server):
+def get_random_user(server):
     """Get a random user that is currently online (status = online)"""
-    online_users = []
+    users = []
     num_users = 0
     for user in server.members:
-        if is_online_or_idle(user) and user.bot == False:
+        if user.bot is False:
             num_users += 1
-            online_users.append(user)
+            users.append(user)
 
     if num_users == 0:
         return bot.user
     else:
-        return online_users[random.randint(0, num_users-1)]
+        return users[random.randint(0, num_users-1)]
 
 async def remove_leftover_roles(server, role):
     """Sometimes when we start the bot up there might be some users that still
@@ -134,32 +134,31 @@ async def role_assigner():
 
     while True:
         random_length = random.randint(1,86399)
-        user = get_random_online_user(server)
+        emp_of_moment = get_random_user(server)
 
         # if there's no one online, then the employee will be roybot for 30 mins
-        if (user == bot.user):
+        if (emp_of_moment == bot.user):
             random_length = 1800
 
-        await bot.add_roles(user, emp_role)
-        emp_of_moment = user
+        await bot.add_roles(emp_of_moment, emp_role)
 
         # check if this new employee of the moment is due to mutiny
         if mutiny == True:
-            await bot.say("The new employee of the moment is " + str(emp_of_moment) + "!")
+            while (emp_of_moment != last_employee):
+                emp_of_moment = get_random_user(server)
+            await bot.send_message(channel, "There has been a mutiny. Congratulations " + str(emp_of_moment) + "!")
             mutiny = False
 
         start_time = time.time()
         while True:
-            if is_online_or_idle(user) is False:
-                break
-            elif mutiny == True:
+            if mutiny == True:
                 last_employee = emp_of_moment
                 break
             elif (time.time() - start_time) < random_length:
                 await asyncio.sleep(3)
             else:
                 break
-        await bot.remove_roles(user, emp_role)
+        await bot.remove_roles(emp_of_moment, emp_role)
 
 @bot.command()
 async def check_role():
@@ -189,6 +188,8 @@ async def mutiny(ctx):
         elif (len(mutiny_votes) == 3):
             await bot.say("There has been a revolution. " + str(emp_of_moment) +
                 "\'s moment has been officially murdered.")
+    else:
+        await bot.say("You have already voted")
 
     if (len(mutiny_votes) == 3):
         mutiny = True
