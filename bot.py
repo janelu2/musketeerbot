@@ -144,7 +144,7 @@ async def role_assigner():
 
         # check if this new employee of the moment is due to mutiny
         if mutiny == True:
-            while (emp_of_moment != last_employee):
+            while (emp_of_moment == last_employee):
                 emp_of_moment = get_random_user(server)
             await bot.send_message(channel, "There has been a mutiny. Congratulations " + str(emp_of_moment) + "!")
             mutiny = False
